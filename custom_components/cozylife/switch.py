@@ -91,19 +91,16 @@ class CozyLifeSwitch(SwitchEntity):
         self._state = self._tcp_client.query()
         _LOGGER.info(f'_name={self._name},_state={self._state}')
         if self._state:
-            self._attr_is_on = 0 < self._state['1']
+            self._attr_is_on = self._state['1'] > 0
     
     @property
     def name(self) -> str:
-        return 'cozylife:' + self._name
+        return f'cozylife:{self._name}'
     
     @property
     def available(self) -> bool:
         """Return if the device is available."""
-        if self._tcp_client._connect:
-            return True
-        else:
-            return False
+        return bool(self._tcp_client._connect)
     
     @property
     def is_on(self) -> bool:

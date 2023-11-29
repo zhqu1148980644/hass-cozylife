@@ -28,7 +28,7 @@ def get_pid_list(lang='en') -> list:
     global _CACHE_PID
     if len(_CACHE_PID) != 0:
         return _CACHE_PID
-    
+
     #domain = 'api-us.doiting.com'
     #protocol = 'http'
     #url_prefix = protocol + '://' + domain
@@ -43,18 +43,18 @@ def get_pid_list(lang='en') -> list:
     except:
         _LOGGER.info('get_pid_list.result is not json')
         return []
-    
+
     if pid_list.get('ret') is None:
         return []
-    
-    if '1' != pid_list['ret']:
+
+    if pid_list['ret'] != '1':
         return []
-    
+
     if pid_list.get('info') is None or type(pid_list.get('info')) is not dict:
         return []
-    
+
     if pid_list['info'].get('list') is None or type(pid_list['info']['list']) is not list:
         return []
-    
+
     _CACHE_PID = pid_list['info']['list']
     return _CACHE_PID

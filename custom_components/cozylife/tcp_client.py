@@ -158,88 +158,85 @@ class tcp_client(object):
         _LOGGER.info(self._icon)
 
     def _get_package(self, cmd: int, payload: dict) -> bytes:
-        """
+      """
         package message
         :param cmd:int:
         :param payload:
         :return:
         """
-        self._sn = get_sn()
-        if CMD_SET == cmd:
-            message = {
-                'pv': 0,
-                'cmd': cmd,
-                'sn': self._sn,
-                'msg': {
-                    'attr': [int(item) for item in payload.keys()],
-                    'data': payload,
-                }
-            }
-        elif CMD_QUERY == cmd:
-            message = {
-                'pv': 0,
-                'cmd': cmd,
-                'sn': self._sn,
-                'msg': {
-                    'attr': [0],
-                }
-            }
-        elif CMD_INFO == cmd:
-            message = {
-                'pv': 0,
-                'cmd': cmd,
-                'sn': self._sn,
-                'msg': {}
-            }
-        else:
-            raise Exception('CMD is not valid')
+      self._sn = get_sn()
+      if CMD_SET == cmd:
+        message = {
+            'pv': 0,
+            'cmd': cmd,
+            'sn': self._sn,
+            'msg': {
+                'attr': [int(item) for item in payload],
+                'data': payload
+            },
+        }
+      elif CMD_QUERY == cmd:
+          message = {
+              'pv': 0,
+              'cmd': cmd,
+              'sn': self._sn,
+              'msg': {
+                  'attr': [0],
+              }
+          }
+      elif CMD_INFO == cmd:
+          message = {
+              'pv': 0,
+              'cmd': cmd,
+              'sn': self._sn,
+              'msg': {}
+          }
+      else:
+        raise Exception('CMD is not valid')
 
-        payload_str = json.dumps(message, separators=(',', ':',))
-        _LOGGER.info(f'_package={payload_str}')
-        return bytes(payload_str + "\r\n", encoding='utf8')
+      payload_str = json.dumps(message, separators=(',', ':',))
+      _LOGGER.info(f'_package={payload_str}')
+      return bytes(payload_str + "\r\n", encoding='utf8')
 
     def _send_receiver(self, cmd: int, payload: dict) -> Union[dict, Any]:
-        """
+      """
         send & receiver
         :param cmd:
         :param payload:
         :return:
         """
-        try:
-            self._connect.send(self._get_package(cmd, payload))
-        except:
-            try:
-                self.disconnect()
-                self._initSocket()
-                self._connect.send(self._get_package(cmd, payload))
-            except:
-                pass
-        try:
-            i = 10
-            while i > 0:
-                res = self._connect.recv(1024)
-                # print(f'res={res},sn={self._sn},{self._sn in str(res)}')
-                i -= 1
-                # only allow same sn
-                if self._sn in str(res):
-                    payload = json.loads(res.strip())
-                    if payload is None or len(payload) == 0:
-                        return None
+      try:
+          self._connect.send(self._get_package(cmd, payload))
+      except:
+          try:
+              self.disconnect()
+              self._initSocket()
+              self._connect.send(self._get_package(cmd, payload))
+          except:
+              pass
+      try:
+        for _ in range(10, 0, -1):
+          res = self._connect.recv(1024)
+          # only allow same sn
+          if self._sn in str(res):
+              payload = json.loads(res.strip())
+              if payload is None or len(payload) == 0:
+                  return None
 
-                    if payload.get('msg') is None or type(payload['msg']) is not dict:
-                        return None
+              if payload.get('msg') is None or type(payload['msg']) is not dict:
+                  return None
 
-                    if payload['msg'].get('data') is None or type(payload['msg']['data']) is not dict:
-                        return None
+              if payload['msg'].get('data') is None or type(payload['msg']['data']) is not dict:
+                  return None
 
-                    return payload['msg']['data']
+              return payload['msg']['data']
 
-            return None
+        return None
 
-        except Exception as e:
-            # print(f'e={e}')
-            _LOGGER.info(f'_only_send.recv.error:{e}')
-            return None
+      except Exception as e:
+          # print(f'e={e}')
+          _LOGGER.info(f'_only_send.recv.error:{e}')
+          return None
 
     def _only_send(self, cmd: int, payload: dict) -> None:
         """

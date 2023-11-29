@@ -24,12 +24,12 @@ if len(sys.argv) == 2:
 if len(sys.argv) > 2:
   end = sys.argv[2]
   start = sys.argv[1]
-probelist = ips(start, end) 
+probelist = ips(start, end)
 print("IP scan from {0}, end with {1}".format(probelist[0],probelist[-1]))
 
-print(f'light:')
-print(f'- platform: cozylife')
-print(f'  lights:')
+print('light:')
+print('- platform: cozylife')
+print('  lights:')
 buf = StringIO()
 
 for ip in probelist:
@@ -49,7 +49,7 @@ for ip in probelist:
       buf.write(f'    pid: {a._pid}\n')
       buf.write(f'    dmn: {a._device_model_name}\n')
       buf.write(f'    dpid: {a._dpid}\n')
-print(f'switch:')
-print(f'- platform: cozylife')
-print(f'  switches:')
+print('switch:')
+print('- platform: cozylife')
+print('  switches:')
 print(buf.getvalue())
